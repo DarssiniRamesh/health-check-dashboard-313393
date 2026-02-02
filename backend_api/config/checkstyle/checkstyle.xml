@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <!-- Keep this ruleset minimal to avoid failing CI for stylistic differences.
+         The goal is to ensure the checkstyleMain task exists and can run. -->
+    <module name="TreeWalker">
+        <!-- Basic sanity checks -->
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports"/>
+    </module>
+</module>

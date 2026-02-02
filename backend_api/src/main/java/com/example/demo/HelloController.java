@@ -36,12 +36,7 @@ public class HelloController {
         return rv;
     }
     
-    @GetMapping("/health")
-    @Operation(summary = "Health check", description = "Returns application health status")
-    public String health() {
-        return "OK";
-    }
-    
+
     @GetMapping("/api/info")
     @Operation(summary = "Application info", description = "Returns application information")
     public String info() {
