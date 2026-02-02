@@ -23,20 +23,14 @@ public class WebCorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // Explicit allow-list of approved browser origins.
-                //
                 // IMPORTANT:
-                // In the Kavia preview environment, the subdomain/port can vary between sessions.
-                // Using allowedOrigins(...) requires an exact match and will cause Spring to reply
-                // with 403 (Forbidden) and no Access-Control-Allow-Origin header when it doesn't.
+                // The Kavia preview environment uses ephemeral subdomains and ports for both the
+                // frontend and backend. Matching exact origins is brittle and can cause CORS 403s
+                // (no Access-Control-Allow-Origin) even though the backend is healthy.
                 //
-                // Use allowedOriginPatterns(...) with narrow wildcards instead of "*".
-                .allowedOriginPatterns(
-                        "http://localhost:3000",
-                        "http://127.0.0.1:3000",
-                        // Kavia preview domains (ports can vary per session; omit port to allow any port)
-                        "https://vscode-internal-*.cloud.kavia.ai",
-                        "https://*.cloud.kavia.ai")
+                // We intentionally allow all origins here, but keep allowCredentials(false).
+                // With credentials disabled, this does not permit cookie-based cross-site requests.
+                .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 // Standard headers used by browsers and typical API clients.
                 .allowedHeaders("Accept", "Content-Type", "Authorization", "X-Requested-With", "Origin")
