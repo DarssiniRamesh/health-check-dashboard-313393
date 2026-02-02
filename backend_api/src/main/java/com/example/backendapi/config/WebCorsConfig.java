@@ -34,9 +34,9 @@ public class WebCorsConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "http://localhost:3000",
                         "http://127.0.0.1:3000",
-                        // Kavia preview domains (allow any port because the platform can vary it)
-                        "https://vscode-internal-*.cloud.kavia.ai:*",
-                        "https://*.cloud.kavia.ai:*")
+                        // Kavia preview domains (ports can vary per session; omit port to allow any port)
+                        "https://vscode-internal-*.cloud.kavia.ai",
+                        "https://*.cloud.kavia.ai")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 // Standard headers used by browsers and typical API clients.
                 .allowedHeaders("Accept", "Content-Type", "Authorization", "X-Requested-With", "Origin")
