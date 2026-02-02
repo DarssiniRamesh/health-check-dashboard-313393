@@ -44,23 +44,40 @@ public class HealthService {
         }
 
         try (Connection connection = dataSource.getConnection()) {
-            boolean valid;
+            boolean valid = true;
+
+            // Prefer an explicit probe:
+            // - isValid(...) is usually fine, but can be flaky with some proxies/poolers
+            // - SELECT 1 is a cheap round trip that confirms query execution.
             try {
-                valid = connection.isValid(2);
+                valid = connection.isValid(5);
             } catch (SQLException ignored) {
-                // Some drivers may not support isValid reliably; if we got a connection,
-                // consider it UP.
+                // Fall back to SELECT 1 below.
                 valid = true;
+            }
+
+            try (var stmt = connection.createStatement();
+                    var rs = stmt.executeQuery("SELECT 1")) {
+                if (!rs.next()) {
+                    valid = false;
+                }
+            } catch (SQLException ex) {
+                return DbHealthResult.down(
+                        Map.of(
+                                "error",
+                                ex.getMessage() == null ? "Database query probe failed" : ex.getMessage()));
             }
 
             if (!valid) {
                 return DbHealthResult.down(Map.of("error", "Connection is not valid"));
             }
+
             return DbHealthResult.up(Map.of());
         } catch (SQLException ex) {
             return DbHealthResult.down(
                     Map.of(
-                            "error", ex.getMessage() == null ? "Database connection failed" : ex.getMessage()));
+                            "error",
+                            ex.getMessage() == null ? "Database connection failed" : ex.getMessage()));
         }
     }
 }
