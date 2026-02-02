@@ -4,15 +4,18 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 /** Service implementing application and database health checks. */
 @Service
 public class HealthService {
 
-    private final DataSource dataSource;
+    private final @Nullable DataSource dataSource;
 
-    public HealthService(DataSource dataSource) {
+    public HealthService(@Nullable DataSource dataSource) {
+        // DataSource may be absent if DB config is missing/invalid. We still want the app to start
+        // and expose /health; DB endpoints should return DOWN in this case.
         this.dataSource = dataSource;
     }
 
@@ -33,7 +36,13 @@ public class HealthService {
          * Database health check.
          *
          * <p>Uses {@link DataSource} to attempt a connection. If successful, reports UP.
+         *
+         * <p>If no DataSource is configured, returns DOWN without throwing so the app can still boot.
          */
+        if (dataSource == null) {
+            return DbHealthResult.down(Map.of("error", "Database is not configured (no DataSource)"));
+        }
+
         try (Connection connection = dataSource.getConnection()) {
             boolean valid;
             try {
