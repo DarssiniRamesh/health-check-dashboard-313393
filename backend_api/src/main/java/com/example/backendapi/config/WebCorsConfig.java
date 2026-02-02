@@ -7,18 +7,31 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * Global CORS configuration for the API.
  *
- * <p>Allows the Angular frontend (typically served on http://localhost:3000) to call the backend.
+ * <p>Allows the Angular frontend to call the backend from approved origins.
+ *
+ * <p>IMPORTANT: We do not use "*" here because it is unsafe if credentials are ever enabled in the
+ * future.
  */
 @Configuration
 public class WebCorsConfig implements WebMvcConfigurer {
 
+    /**
+     * PUBLIC_INTERFACE
+     *
+     * <p>Configures global CORS for all routes (including {@code GET /health}).
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // Explicit origin required for credentialed requests; also safer than "*"
-                .allowedOrigins("http://localhost:3000")
+                // Explicit allow-list of approved browser origins.
+                .allowedOrigins(
+                        "http://localhost:3000",
+                        "https://vscode-internal-42590-beta.beta01.cloud.kavia.ai:3000")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
+                // Standard headers used by browsers and typical API clients.
+                .allowedHeaders("Accept", "Content-Type", "Authorization", "X-Requested-With", "Origin")
+                .exposedHeaders("Location")
+                // This service is called without cookies/auth; keep credentials disabled.
                 .allowCredentials(false)
                 .maxAge(3600);
     }
