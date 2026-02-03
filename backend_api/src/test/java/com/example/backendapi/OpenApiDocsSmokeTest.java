@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
  * connection: the goal is to ensure OpenAPI generation works even when DB config is absent.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = backendapiApplication.class)
+@Import(test_JdbcTemplateTestConfig.class)
 class OpenApiDocsSmokeTest {
 
     @Autowired private TestRestTemplate restTemplate;

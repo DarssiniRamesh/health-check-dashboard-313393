@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.4.8'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'checkstyle'
+	id 'jacoco'
 }
 
 checkstyle {
@@ -46,6 +47,20 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy(tasks.named('jacocoTestReport'))
+}
+
+jacoco {
+	toolVersion = '0.8.12'
+}
+
+tasks.named('jacocoTestReport') {
+	dependsOn(tasks.named('test'))
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
 }
 
 // Load .env file for bootRun task
