@@ -28,8 +28,11 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+	// Spring Boot 3.4.x requires a newer SpringDoc; older versions can 500 on /v3/api-docs.
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -38,4 +41,23 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// Load .env file for bootRun task
+tasks.named('bootRun') {
+	// Read .env file and set as environment variables for the bootRun process
+	def envFile = file('.env')
+	if (envFile.exists()) {
+		envFile.readLines().each { line ->
+			// Skip empty lines and comments
+			if (line.trim() && !line.trim().startsWith('#')) {
+				def parts = line.split('=', 2)
+				if (parts.length == 2) {
+					def key = parts[0].trim()
+					def value = parts[1].trim()
+					environment key, value
+				}
+			}
+		}
+	}
 }
