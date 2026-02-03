@@ -16,10 +16,11 @@ import org.springframework.util.StringUtils;
  * Maps common "single URL" Postgres env vars (e.g. DATABASE_URL provided by Neon/hosting platforms)
  * into Spring Boot's standard {@code spring.datasource.*} properties.
  *
- * <p>Why: This project defaults {@code spring.datasource.url} to localhost to keep the app bootable
- * when DB env vars are absent. In environments where the DB URL is provided as {@code DATABASE_URL}
- * (but {@code SPRING_DATASOURCE_URL} is not set), the app would otherwise keep using the localhost
- * default and DB health checks would fail.
+ * <p>This processor converts DATABASE_URL (or NEON_DATABASE_URL, POSTGRES_URL, etc.) from
+ * {@code postgresql://user:pass@host:port/db} format into JDBC format with sslmode=require.
+ *
+ * <p>Explicit SPRING_DATASOURCE_* env vars take precedence. If neither DATABASE_URL variants
+ * nor SPRING_DATASOURCE_URL are provided, the app will fail to start (no localhost fallback).
  */
 public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
