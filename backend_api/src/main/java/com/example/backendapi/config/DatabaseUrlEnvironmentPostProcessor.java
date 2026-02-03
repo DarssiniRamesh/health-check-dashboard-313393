@@ -54,7 +54,15 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             return;
         }
 
-        ParsedJdbc parsed = parseToJdbc(raw);
+        // Some providers/documentation supply the connection as a full psql command, e.g.:
+        //   psql 'postgresql://user:pass@host/db?sslmode=require'
+        // or
+        //   psql postgresql://user:pass@host/db
+        //
+        // Normalize that into just the URL so our parser can reliably build a JDBC URL.
+        String normalizedRaw = normalizeDatabaseUrl(raw);
+
+        ParsedJdbc parsed = parseToJdbc(normalizedRaw);
         if (parsed == null || !StringUtils.hasText(parsed.jdbcUrl())) {
             return;
         }
@@ -81,6 +89,42 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             }
         }
         return null;
+    }
+
+    private static String normalizeDatabaseUrl(String raw) {
+        String trimmed = raw == null ? null : raw.trim();
+        if (!StringUtils.hasText(trimmed)) {
+            return trimmed;
+        }
+
+        // Strip leading "psql" (and optional flags) if present.
+        // Examples:
+        //  - psql postgresql://...
+        //  - psql 'postgresql://...'
+        //  - psql --set=sslmode=require postgresql://...   (rare, but be defensive)
+        if (trimmed.startsWith("psql")) {
+            // Remove the leading "psql" token.
+            String rest = trimmed.substring(4).trim();
+
+            // Remove any leading flags like -X, -v, --set=... until we hit something that looks like a URL.
+            // This is intentionally simple: we only need to support common copy/paste forms.
+            while (rest.startsWith("-")) {
+                int nextSpace = rest.indexOf(' ');
+                if (nextSpace < 0) {
+                    // Only flags present and no URL.
+                    return "";
+                }
+                rest = rest.substring(nextSpace + 1).trim();
+            }
+            trimmed = rest;
+        }
+
+        // Strip surrounding single/double quotes.
+        if ((trimmed.startsWith("'") && trimmed.endsWith("'")) || (trimmed.startsWith("\"") && trimmed.endsWith("\""))) {
+            trimmed = trimmed.substring(1, trimmed.length() - 1);
+        }
+
+        return trimmed.trim();
     }
 
     private static ParsedJdbc parseToJdbc(String rawUrl) {
