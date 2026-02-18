@@ -1,7 +1,9 @@
 package com.example.backendapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.example.backendapi.health.DbHealthResult;
 import com.example.backendapi.health.HealthService;
